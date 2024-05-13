@@ -1,0 +1,45 @@
+DELIMITER //
+
+CREATE PROCEDURE CalculateSubjectAttendance(IN student_id INT)
+BEGIN
+    DECLARE attendance_threshold DECIMAL(5,2);
+    DECLARE total_classes INT;
+    DECLARE attended_classes INT;
+    DECLARE attendance_percentage DECIMAL(5,2);
+
+    -- Set the attendance threshold
+    SET attendance_threshold = 75.0;
+
+    -- Get total number of classes for the student
+    SELECT COUNT(*) INTO total_classes
+    FROM Daily_Attendance
+    WHERE student_id = student_id;
+
+    -- Get number of attended classes for the student
+    SELECT COUNT(*) INTO attended_classes
+    FROM Daily_Attendance
+    WHERE student_id = student_id AND status = 'Present';
+
+    -- Calculate attendance percentage
+    IF total_classes > 0 THEN
+        SET attendance_percentage = (attended_classes / total_classes) * 100;
+    ELSE
+        SET attendance_percentage = 0;
+    END IF;
+
+    -- Display attendance percentage
+    SELECT CONCAT('Attendance Percentage for student ', student_id, ': ', attendance_percentage, '%') AS 'Attendance Percentage';
+
+    -- Check if attendance is below threshold
+    IF attendance_percentage < attendance_threshold THEN
+        -- Get student and parent details
+        SELECT s.student_id, s.first_name, s.last_name,
+               p.parent_first_name, p.parent_last_name, p.parent_email, p.parent_phone_number
+        FROM Students s
+        INNER JOIN Parents p ON s.parent_id = p.parent_id
+        WHERE s.student_id = student_id;
+    END IF;
+END //
+
+DELIMITER ;
+

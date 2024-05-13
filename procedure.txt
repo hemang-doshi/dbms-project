@@ -1,0 +1,34 @@
+DELIMITER //
+
+CREATE PROCEDURE CalculateAttendancePercentage(IN student_id INT)
+BEGIN
+    DECLARE total_classes INT;
+    DECLARE attended_classes INT;
+    DECLARE attendance_percentage DECIMAL(5,2);
+
+    -- Get total number of classes for the student
+    SELECT COUNT(*) INTO total_classes
+    FROM Daily_Attendance
+    WHERE student_id = student_id;
+
+    -- Get number of attended classes for the student
+    SELECT COUNT(*) INTO attended_classes
+    FROM Daily_Attendance
+    WHERE student_id = student_id AND status = 'Present';
+
+    -- Calculate attendance percentage
+    IF total_classes > 0 THEN
+        SET attendance_percentage = (attended_classes / total_classes) * 100;
+    ELSE
+        SET attendance_percentage = 0;
+    END IF;
+
+    -- Display attendance percentage
+    SELECT CONCAT('Attendance Percentage for student ', student_id, ': ', attendance_percentage, '%') AS 'Attendance Percentage';
+END //
+
+DELIMITER ;
+
+--CALL CalculateSubjectAttendance(150);
+
+--SELECT * FROM LowAttendanceLog;
